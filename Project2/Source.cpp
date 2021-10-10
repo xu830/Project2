@@ -226,7 +226,7 @@ void update(void) {
 //===============================
 // teapot display
 // ==============================
-void displayTeapot() {
+void displayTorse() {
 	//if (rotation_opt == 1) {
 	//	glRotated(ax, 1.0, 0.0, 0.0);
 	//	glRotated(ay, 0.0, 1.0, 0.0);
@@ -234,7 +234,7 @@ void displayTeapot() {
 	//}
 	glLoadMatrixf(M);
 	// render objects
-	glutSolidTeapot(0.3);
+	glutSolidTetrahedron();
 }
 //================================
 // render
@@ -281,7 +281,7 @@ void render(void) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatef(0.0, 0.0, -20);
-	displayTeapot();
+	displayTorse();
 
 	// disable lighting
 	glDisable(GL_LIGHT0);
