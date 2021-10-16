@@ -37,8 +37,10 @@ float fixaray[6][6] = { {-8.0, -6.0, -25.0, 30, 0, 80}, {-2.0, -5.0, -17.0, 0, 1
 
 float dt = 0.01; //dt is the spcing to used in the animation
 
-//rotation matrix
-float M[16] = { 0 };
+//geometrix matrix for torso and legs
+float M[16] = { 0 };//torso
+
+float *MR; //right leg
 
 //t is the value in both catmull-rom and b spline function.
 float t = 0.0;
@@ -70,6 +72,28 @@ float matrixTMG(float M[4][4], float G[4]) {
 	MG[3] = mCR[3][0] * G[0] + mCR[3][1] * G[1] + mCR[3][2] * G[2] + mCR[3][3] * G[3];
 	TMG = MG[0] * mt * mt * mt + MG[1] * mt * mt + MG[2] * mt + MG[3];
 	return TMG;
+}
+
+//matrix multiplacation for transformation(4*4 matrix * 4*4 matrix)
+float* matrixtransform(float M1[16], float M2[16]) {
+	static float M12[16];
+	M12[0] = M1[0] * M2[0] + M1[4] * M2[1] + M1[8] * M2[2] + M1[12] * M2[3];
+	M12[1] = M1[1] * M2[0] + M1[5] * M2[1] + M1[9] * M2[2] + M1[13] * M2[3];
+	M12[2] = M1[2] * M2[0] + M1[6] * M2[1] + M1[10] * M2[2] + M1[14] * M2[3];
+	M12[3] = M1[3] * M2[0] + M1[7] * M2[1] + M1[11] * M2[2] + M1[15] * M2[3];
+	M12[4] = M1[0] * M2[4] + M1[4] * M2[5] + M1[8] * M2[6] + M1[12] * M2[7];
+	M12[5] = M1[1] * M2[4] + M1[5] * M2[5] + M1[9] * M2[6] + M1[13] * M2[7];
+	M12[6] = M1[2] * M2[4] + M1[6] * M2[5] + M1[10] * M2[6] + M1[14] * M2[7];
+	M12[7] = M1[3] * M2[4] + M1[7] * M2[5] + M1[11] * M2[6] + M1[15] * M2[7];
+	M12[8] = M1[0] * M2[8] + M1[4] * M2[9] + M1[8] * M2[10] + M1[12] * M2[11];
+	M12[9] = M1[1] * M2[8] + M1[5] * M2[9] + M1[9] * M2[10] + M1[13] * M2[11];
+	M12[10] = M1[2] * M2[8] + M1[6] * M2[9] + M1[10] * M2[10] + M1[14] * M2[11];
+	M12[11] = M1[3] * M2[8] + M1[7] * M2[9] + M1[11] * M2[10] + M1[15] * M2[11];
+	M12[12] = M1[0] * M2[12] + M1[4] * M2[13] + M1[8] * M2[14] + M1[12] * M2[15];
+	M12[13] = M1[1] * M2[12] + M1[5] * M2[13] + M1[9] * M2[14] + M1[13] * M2[15];
+	M12[14] = M1[2] * M2[12] + M1[6] * M2[13] + M1[10] * M2[14] + M1[14] * M2[15];
+	M12[15] = M1[3] * M2[12] + M1[7] * M2[13] + M1[11] * M2[14] + M1[15] * M2[15];
+	return M12;
 }
 
 //================================
@@ -232,9 +256,40 @@ void displayTorse() {
 	//	glRotated(ay, 0.0, 1.0, 0.0);
 	//	glRotated(az, 0.0, 0.0, 1.0);
 	//}
+	//std::cout << M[0];
 	glLoadMatrixf(M);
 	// render objects
-	glutSolidTetrahedron();
+	glutSolidCube(1);
+}
+
+void displayLeftLeg() {
+	float *ML; // left leg
+	float TL[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -0.5, 0, 1};
+	float theta = (sin(4 * PI * t - PI / 2) * PI) / 4;
+	//std::cout << theta;
+	float RL[16] = { cos(theta),sin(theta),0,0,-sin(theta),cos(theta),0,0,0,0,1,0,0,0,0,1 };
+	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.5, 0, 1 };
+	ML = matrixtransform(M, RL);
+	ML = matrixtransform(ML, TL);
+	ML = matrixtransform(ML, TL2);
+
+	glLoadMatrixf(ML);
+	glScalef(0.3, 2.5, 0.3);
+	glutSolidCube(1.0);
+}
+
+void displayRightLeg() {
+	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,-0.5, 0, 1 };
+	float theta = (sin(4 * PI * t - PI / 2) * PI) / 4;
+	float RR[16] = { 1, 0, 0, 0, 0, cos(theta), sin(theta), 0, 0, -sin(theta), cos(theta), 0, 0, 0, 0, 1 };
+	float TR2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,-0.5, 0, 1 };
+	MR = matrixtransform(M, RR);
+	MR = matrixtransform(MR, TR);
+	MR = matrixtransform(MR, TR2);
+
+	glLoadMatrixf(MR);
+	glScalef(0.3, 2.5, 0.3);
+	glutSolidCube(1.0);
 }
 //================================
 // render
@@ -282,6 +337,8 @@ void render(void) {
 	glLoadIdentity();
 	glTranslatef(0.0, 0.0, -20);
 	displayTorse();
+	displayLeftLeg();
+	displayRightLeg();
 
 	// disable lighting
 	glDisable(GL_LIGHT0);
