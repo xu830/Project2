@@ -15,6 +15,8 @@
 //In this lab, I use catmul-rom spline and fixed angle for interpolation.
 //If you would like to add more critical points, or modify current point's value, please change fixaray.
 //the first 3 values is xyz coordinate of torso, the last 3 values is the rotation on x y z axis.
+//You can change the speed in order to slow down or speed up legs movement.
+// You can change theta in order to modify the leg's biggest rotation.
 //================
 
 
@@ -31,7 +33,7 @@ float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0,
 
 //geometric point for fixed angle
 float fixaray[6][6] = { {-8.0, -6.0, -25.0, 0, 0, 0}, {-2.0, -5.0, -17.0, 0, 0, 30}, {5.5, -2.0, -13.0, 0, 90, 0},{2.0, 3.0, -15.0, 0, 0, 0},
-	{-3.5, 6.5, -20.0, 90, 0, 0}, {10.0, 6.0, -15.0, 0, 0, 0} };
+	{-3.5, 6.5, -20.0, 0, 30, 0}, {3.0, 8.0, -15.0, 0, 0, 0} };
 
 float dt = 0.01; //dt is the spcing to used in the animation
 
@@ -257,17 +259,18 @@ void displayTorse() {
 	//std::cout << M[0];
 	glLoadMatrixf(M);
 	// render objects
+	glScalef(1.5, 2.0, 1);
 	glutSolidCube(1);
 }
 
 void displayLeftLeg() {
 	float *ML; // left leg
-	float TL[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.5, 0.3, 1};
-	float theta = (sin(speed * t * PI + PI / 2) * PI) / 5;
-	float RL[16] = { cos(theta),sin(theta),0,0,-sin(theta),cos(theta),0,0,0,0,1,0,0,0,0,1 };
-	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.0, 0.5, 0, 1 };
-	ML = matrixtransform(M, RL);
-	ML = matrixtransform(ML, TL);
+	float TL[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.3, 0.3, 1};
+	float theta = (sin(speed * t * PI + PI / 2) * PI) / 8;
+	float RL[16] = { cos(theta),-sin(theta),0,0,sin(theta),cos(theta),0,0,0,0,1,0,0,0,0,1 };
+	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.0, 0, 0, 1 };
+	ML = matrixtransform(M, TL);
+	ML = matrixtransform(ML, RL);
 	ML = matrixtransform(ML, TL2);
 
 	glLoadMatrixf(ML);
@@ -277,12 +280,12 @@ void displayLeftLeg() {
 }
 
 void displayRightLeg() {
-	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.5, -1.0, -0.3, 1 };
-	float theta = (sin(speed * t * PI + PI / 2) * PI) / 5;
-	float RR[16] = { cos(-theta),sin(-theta),0,0,-sin(-theta),cos(-theta),0,0,0,0,1,0,0,0,0,1 };
+	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.5, -1.3, -0.3, 1 };
+	float theta = (sin(speed * t * PI + PI / 2) * PI) / 8;
+	float RR[16] = { cos(-theta),-sin(-theta),0,0,sin(-theta),cos(-theta),0,0,0,0,1,0,0,0,0,1 };
 	float TR2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.5 , 0, 0, 1 };
-	MR = matrixtransform(M, RR);
-	MR = matrixtransform(MR, TR);
+	MR = matrixtransform(M, TR);
+	MR = matrixtransform(MR, RR);
 	MR = matrixtransform(MR, TR2);
 
 	glLoadMatrixf(MR);
