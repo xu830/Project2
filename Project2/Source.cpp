@@ -10,30 +10,28 @@
 // global variables
 //================================
 
+//================================
+//INSTRUCTION:
+//In this lab, I use catmul-rom spline and fixed angle for interpolation.
+//If you would like to add more critical points, or modify current point's value, please change fixaray.
+//the first 3 values is xyz coordinate of torso, the last 3 values is the rotation on x y z axis.
+//================
+
+
 //option
 int spline_opt, //1 for catmull-rom, 2 for b spline
 rotation_opt; // 1 for fixed angle, 2 for quaternion
 
-
-//==================================
-// INPUT CAN BE MODIFIED HERE!!!
-// CONTROL POINTS INSTRUCTION:
-// qaray is used for stroing control points while using quaternion
-//       the format is {x, y, z, rotation degree, xaxis, yaxis, zaxis}
-// fixaray is used for stroing control points while using quaternion
-//       the format is {x, y, z, rotation degree on xaxis, rotation degree on yaxis,rotation degree on zaxis}
-// point_num is the number of contritical points
-//       if you would like to add or remove points from qaray or fixaray, please remember to modify this value
-// ==================================
-
 float point_num = 6;
+//speed for leg movement
+float speed = 3;
 //geometric point for quaternion
 float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0, 1, 0}, {5.5, -2.0, -13.0, 1, 0, 0, 1},{2.0, 3.0, -15.0, 1, 1, 0, 0},
 	{-3.5, 6.5, -20.0, 1, 0, 1, 0}, {10.0, 6.0, -15.0, 0, 0, 1, 0} };
 
 //geometric point for fixed angle
-float fixaray[6][6] = { {-8.0, -6.0, -25.0, 30, 0, 80}, {-2.0, -5.0, -17.0, 0, 180, 0}, {5.5, -2.0, -13.0, 0, 50, 90},{2.0, 3.0, -15.0, 60, 40, 0},
-	{-3.5, 6.5, -20.0, 180, 0, 90}, {10.0, 6.0, -15.0, 0, 90, 30} };
+float fixaray[6][6] = { {-8.0, -6.0, -25.0, 0, 0, 0}, {-2.0, -5.0, -17.0, 0, 0, 30}, {5.5, -2.0, -13.0, 0, 90, 0},{2.0, 3.0, -15.0, 0, 0, 0},
+	{-3.5, 6.5, -20.0, 90, 0, 0}, {10.0, 6.0, -15.0, 0, 0, 0} };
 
 float dt = 0.01; //dt is the spcing to used in the animation
 
@@ -264,11 +262,10 @@ void displayTorse() {
 
 void displayLeftLeg() {
 	float *ML; // left leg
-	float TL[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -0.5, 0, 1};
-	float theta = (sin(4 * PI * t - PI / 2) * PI) / 4;
-	//std::cout << theta;
+	float TL[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.5, 0.3, 1};
+	float theta = (sin(speed * t * PI + PI / 2) * PI) / 5;
 	float RL[16] = { cos(theta),sin(theta),0,0,-sin(theta),cos(theta),0,0,0,0,1,0,0,0,0,1 };
-	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.5, 0, 1 };
+	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.0, 0.5, 0, 1 };
 	ML = matrixtransform(M, RL);
 	ML = matrixtransform(ML, TL);
 	ML = matrixtransform(ML, TL2);
@@ -276,13 +273,14 @@ void displayLeftLeg() {
 	glLoadMatrixf(ML);
 	glScalef(0.3, 2.5, 0.3);
 	glutSolidCube(1.0);
+
 }
 
 void displayRightLeg() {
-	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,-0.5, 0, 1 };
-	float theta = (sin(4 * PI * t - PI / 2) * PI) / 4;
-	float RR[16] = { 1, 0, 0, 0, 0, cos(theta), sin(theta), 0, 0, -sin(theta), cos(theta), 0, 0, 0, 0, 1 };
-	float TR2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,-0.5, 0, 1 };
+	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.5, -1.0, -0.3, 1 };
+	float theta = (sin(speed * t * PI + PI / 2) * PI) / 5;
+	float RR[16] = { cos(-theta),sin(-theta),0,0,-sin(-theta),cos(-theta),0,0,0,0,1,0,0,0,0,1 };
+	float TR2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.5 , 0, 0, 1 };
 	MR = matrixtransform(M, RR);
 	MR = matrixtransform(MR, TR);
 	MR = matrixtransform(MR, TR2);
@@ -396,14 +394,18 @@ void timer(int value) {
 // main
 //================================
 int main(int argc, char** argv) {
-	//instruction
+	/***
 	std::cout << "press 1 for catmull-rom spline \n";
 	std::cout << "press 2 for B-spline\n";
 	std::cin >> spline_opt;
 	std::cout << "press 1 for fixed angle\n";
 	std::cout << "press 2 for quaternion\n";
 	std::cin >> rotation_opt;
+	***/
+	spline_opt = 1;
+	rotation_opt = 1;
 
+	//get critical points for left legs--using fixed angle
 	// create opengL window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
